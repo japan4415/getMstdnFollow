@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <script
+            src="https://code.jquery.com/jquery-3.2.1.js"
+            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+            crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <form id='sample_form' action="javascript:void(0)">
+            <p>名前(@名前@アドレス)</p>
+            <input name="name" type="text">
+            <div id="comment_err"></div>
+            <div id="send_err"></div>
+            <button id="submit">フォローされる</button>
+        </form>
+        <script>
+            $('#submit').click(function(e){
+            var name = $('[name=name]').val();
+            var postData = {};
+            postData["id"] = name;
+
+            if(validateData(postData) === false){
+            $.ajax({
+                url: 'http://discord.jp:42080/',
+                type: "POST",
+                dataType : "json",
+                data: postData,
+                timeout: 30000,
+                beforeSend: function(xhr, settings) {
+                //送信前の処理：ボタンを非活性化して、二重送信を防ぐ
+                $('#submit').attr('disabled', true);
+                },
+                complete: function(xhr, textStatus) {
+                //ajax通信が完了したら、ボタンの非活性化を解除する
+                $('#submit').attr('disabled', false);
+                },
+                success: function(result, textStatus, xhr) {
+                //ajax通信が成功したときの処理
+                //PHP側で、エラーであれば0、成功であれば1を返すようにしてあると仮定
+                if(result['code'] == 'false...'){
+                    $('#send_err').text('フォローに失敗しました@名前@アドレスの形か確認して下さい。');
+                }else{
+                    $("#sample_form")[0].reset();
+                    alert('フォローされました。');
+                }
+                },
+                error: function(xhr, textStatus, error) {
+                //ajax通信が失敗した時の処理
+                $('#send_err').text('通信が失敗。アプリ鯖が落ちてるかも。@japan4415@mstdn.uec.tokyoまで連絡をください。');
+                }
+            });
+            }
+
+            function validateData(postData){
+                //エラーがないときはerr_flgはfalseとする
+                var errFlg = false;
+
+                //複数回エラーになったときのためにリセットしておく
+                $('#name_err').text('');
+
+                return errFlg;
+            }
+            });
+        </script>
+    </body>
+</html>
